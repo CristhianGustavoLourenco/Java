@@ -5,6 +5,7 @@
  */
 package com.mycompany.prowayswing.telas;
 
+import com.mycompany.prowayswing.bancoDados.Banco;
 import java.sql.*;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -43,7 +44,7 @@ public class CategoriaJFrame extends javax.swing.JFrame {
         Editar = new javax.swing.JButton();
         Cadastrar = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jTableCategoria.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -131,29 +132,31 @@ public class CategoriaJFrame extends javax.swing.JFrame {
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void CadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_CadastrarActionPerformed
         try {
             String nomeCategoria = JTextFieldNomeCategoria.getText();
 
-            var jdbcUrl = "jdbc:mysql://localhost:3306/locadora";
-            var jdbcUsuario = "root";
-            var jdbcSenha = "admin";
-
-            var conexao = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcSenha);
+            var conexao = Banco.conectar();
 
             String query;
 
             if (idEscolhidoCategoria == -1) {
-                query = "INSERT INTO categoria (nome) VALUES ('" + nomeCategoria + "')";
+                query = "INSERT INTO categoria (nome) VALUES (?)";
+                var prepareStatement = conexao.prepareStatement(query);
+                prepareStatement.setString(1, nomeCategoria);
+                prepareStatement.execute();
             } else {
-                query = "UPDATE categoria SET nome = '" + nomeCategoria + "'WHERE id = " + idEscolhidoCategoria;
+                query = "UPDATE categoria SET nome = ? WHERE id = ?";
+                var prepareStatement = conexao.prepareStatement(query);
+                prepareStatement.setString(1, nomeCategoria);
+                prepareStatement.setInt(2, idEscolhidoCategoria);
+                prepareStatement.execute();
+                
                 idEscolhidoCategoria = -1;
             }
-
-            var statement = conexao.createStatement();
-            statement.execute(query);
 
             listarCategorias();
             
@@ -165,28 +168,28 @@ public class CategoriaJFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_CadastrarActionPerformed
 
     private void EditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_EditarActionPerformed
-        try {
-
-            var jdbcUrl = "jdbc:mysql;//localhost:3306/locadora";
-            var jdbcUsuario = "root";
-            var jdbcSenha = "admin";
-
-            var conexao = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcSenha);
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+       var indiceLinhaSelecionadaCategoria = jTableCategoria.getSelectedRow();
+       idEscolhidoCategoria = Integer.parseInt(jTableCategoria.getValueAt(indiceLinhaSelecionadaCategoria,0).toString());
+       var nomeEscolhidoCategoria = jTableCategoria.getValueAt(indiceLinhaSelecionadaCategoria, 1).toString();
+       JTextFieldNomeCategoria.setText(nomeEscolhidoCategoria);
     }//GEN-LAST:event_EditarActionPerformed
 
     private void ExcluirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ExcluirActionPerformed
         try {
 
-            var jdbcUrl = "jdbc:mysql;//localhost:3306/locadora";
-            var jdbcUsuario = "root";
-            var jdbcSenha = "admin";
-
-            var conexao = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcSenha);
-
+            var conexao = Banco.conectar();
+            
+            var indiceLinhaSelecionada = jTableCategoria.getSelectedRow();
+            var idEscolhidoCategoriaApagar = Integer.parseInt(jTableCategoria.getValueAt(indiceLinhaSelecionada, 0).toString());
+            var query = "DELETE FROM categoria WHERE id = ?";
+            var prepareStatement = conexao.prepareStatement(query);
+            prepareStatement.setInt(1, idEscolhidoCategoriaApagar);
+            prepareStatement.execute();
+            
+            listarCategorias();
+            
+            JOptionPane.showMessageDialog(null, "Categoria Apagado com Sucesso");
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -195,11 +198,7 @@ public class CategoriaJFrame extends javax.swing.JFrame {
     private void listarCategorias(){
  
         try {
-            var jdbcUrl = "jdbc:mysql://localhost:3306/locadora";
-            var jdbcUsuario = "root";
-            var jdbcSenha = "admin";
-
-            var conexao = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcSenha);
+            var conexao = Banco.conectar();
             var query = "SELECT id, nome FROM categoria";
             var statement = conexao.createStatement();
             var dados = statement.executeQuery(query);

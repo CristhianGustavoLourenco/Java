@@ -4,8 +4,11 @@
  */
 package com.mycompany.prowayswing.telas;
 
+import com.mycompany.prowayswing.bancoDados.Banco;
 import javax.swing.JOptionPane;
 import java.sql.*;
+import javax.swing.ComboBoxModel;
+import javax.swing.UIManager;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -13,7 +16,7 @@ import javax.swing.table.DefaultTableModel;
  * @author moc
  */
 public class FilmeJFrame extends javax.swing.JFrame {
-
+    
     private int idEscolhido = -1;
 
     /**
@@ -21,6 +24,8 @@ public class FilmeJFrame extends javax.swing.JFrame {
      */
     public FilmeJFrame() {
         initComponents();
+        listarFilmes();
+        popularComboBoxCategoria();
     }
 
     /**
@@ -44,8 +49,11 @@ public class FilmeJFrame extends javax.swing.JFrame {
         jButtonEditar = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jButtonApagar = new javax.swing.JButton();
+        jComboBoxCategoria = new javax.swing.JComboBox<>();
+        jLabel1Categoria = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setAutoRequestFocus(false);
 
         jLabelNome.setText("Nome");
 
@@ -61,11 +69,11 @@ public class FilmeJFrame extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Código", "Nome"
+                "Código", "Categoria", "Nome"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false
+                false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -76,6 +84,7 @@ public class FilmeJFrame extends javax.swing.JFrame {
         if (jTableFilmes.getColumnModel().getColumnCount() > 0) {
             jTableFilmes.getColumnModel().getColumn(0).setResizable(false);
             jTableFilmes.getColumnModel().getColumn(1).setResizable(false);
+            jTableFilmes.getColumnModel().getColumn(2).setResizable(false);
         }
 
         jLabelListaFilmes.setText("Lista de Filmes");
@@ -96,6 +105,10 @@ public class FilmeJFrame extends javax.swing.JFrame {
             }
         });
 
+        jComboBoxCategoria.setSelectedIndex(-1);
+
+        jLabel1Categoria.setText("Categoria");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -111,64 +124,91 @@ public class FilmeJFrame extends javax.swing.JFrame {
                     .addComponent(jButtonApagar))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jButtonCadastrar, javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jTextFieldNome, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 261, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jLabelNome))
-                .addContainerGap())
+                .addGap(18, 18, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jButtonCadastrar)
+                        .addGap(6, 6, 6))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jTextFieldNome, javax.swing.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
+                            .addComponent(jLabelNome))
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jComboBoxCategoria, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1Categoria, javax.swing.GroupLayout.PREFERRED_SIZE, 68, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabelListaFilmes)
-                    .addComponent(jLabelNome, javax.swing.GroupLayout.Alignment.TRAILING))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(jTextFieldNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jButtonEditar))
+                        .addContainerGap()
+                        .addComponent(jLabelListaFilmes)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButtonCadastrar)
-                            .addComponent(jButtonApagar)))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 275, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(28, 28, 28)
+                                .addComponent(jButtonEditar))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel1Categoria)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jComboBoxCategoria, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jButtonApagar))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(jLabelNome)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextFieldNome, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jButtonCadastrar)))))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addComponent(jSeparator1)
         );
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButtonCadastrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonCadastrarActionPerformed
         try {
             String nome = jTextFieldNome.getText();
-
-            var jdbcUrl = "jdbc:mysql://localhost:3306/locadora";
-            var jdbcUsuario = "root";
-            var jdbcSenha = "admin";
-
-            var conexao = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcSenha);
-
+            String categoria = (String) jComboBoxCategoria.getSelectedItem();
+            String[] parts = categoria.split(" - ");
+            var idCategoria = Integer.parseInt(parts[0]);
+            
+            var conexao = Banco.conectar();
+            
             String query;
             if (idEscolhido == -1) {
-                query = "INSERT INTO filmes (nome) VALUES ('" + nome + "')";
+                query = "INSERT INTO filmes (id_categoria, nome) VALUES (?, ?)";
+                var prepareStatement = conexao.prepareStatement(query);
+                prepareStatement.setInt(1, idCategoria);
+                prepareStatement.setString(2, nome);
+                prepareStatement.execute();
             } else {
-                query = "UPDATE filmes SET nome = '" + nome + "' WHERE id = " + idEscolhido;
+                query = "UPDATE filmes SET id_categoria = ?, nome = ? WHERE id = ?";
+                var prepareStatement = conexao.prepareStatement(query);
+                prepareStatement.setInt(1, idCategoria);
+                prepareStatement.setString(2, nome);
+                prepareStatement.setInt(3, idEscolhido);
+                prepareStatement.execute();
                 idEscolhido = -1;
             }
-
-            var statement = conexao.createStatement();
-            statement.execute(query);
-
+  
             listarFilmes();
-
+            
             JOptionPane.showMessageDialog(null, "Filme Cadastrado com Sucesso");
-
+            
             JOptionPane.showMessageDialog(null, nome);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -177,23 +217,20 @@ public class FilmeJFrame extends javax.swing.JFrame {
 
     private void jButtonApagarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonApagarActionPerformed
         try {
-            var jdbcUrl = "jdbc:mysql://localhost:3306/locadora";
-            var jdbcUsuario = "root";
-            var jdbcSenha = "admin";
-
-            var conexao = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcSenha);
-
+            var conexao = Banco.conectar();
+            
             var indiceLinhaSelecionada = jTableFilmes.getSelectedRow();
             var idEscolhidoApagar = Integer.parseInt(jTableFilmes.getValueAt(indiceLinhaSelecionada, 0).toString());
-            var query = "DELETE FROM filmes WHERE id = '" + idEscolhidoApagar + "'";
-            var statement = conexao.createStatement();
-            statement.execute(query);
-
+            var query = "DELETE FROM filmes WHERE id = ?";
+            var prepareStatement = conexao.prepareStatement(query);
+            prepareStatement.setInt(1, idEscolhidoApagar);
+            prepareStatement.execute();
+            
             listarFilmes();
-
+            
             JOptionPane.showMessageDialog(null, "Filme Apagado com Sucesso!");
         } catch (SQLException e) {
-
+            
             e.printStackTrace();
         }
     }//GEN-LAST:event_jButtonApagarActionPerformed
@@ -201,18 +238,53 @@ public class FilmeJFrame extends javax.swing.JFrame {
     private void jButtonEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonEditarActionPerformed
         var indiceLinhaSelecionada = jTableFilmes.getSelectedRow();
         idEscolhido = Integer.parseInt(jTableFilmes.getValueAt(indiceLinhaSelecionada, 0).toString());
-        var nomeEscolhido = jTableFilmes.getValueAt(indiceLinhaSelecionada, 1).toString();
-        jTextFieldNome.setText(nomeEscolhido);
-    }//GEN-LAST:event_jButtonEditarActionPerformed
+        try {
+            var conexao = Banco.conectar();
+            var query = """
+                        SELECT
+                        filmes.id,
+                        filmes.id_categoria,
+                        filmes.nome
+                        FROM filmes
+                        WHERE id = ?
+                        """;
+            var prepareStatement = conexao.prepareStatement(query);
+            prepareStatement.setInt(1, idEscolhido);
+            var dados = prepareStatement.executeQuery(query);
+            var modeloTabela = (DefaultTableModel) jTableFilmes.getModel();
+            var categoriaNome = jTableFilmes.getValueAt(indiceLinhaSelecionada, 1).toString();
+            if (dados.next()) {
+                var nome = dados.getString("nome");
+                var idCategoria = dados.getInt("id_categoria");
+                jComboBoxCategoria.setSelectedItem(idCategoria + " - " + categoriaNome);
+                jTextFieldNome.setText(nome);                
+                
+                var mensagem = idCategoria + " - " + categoriaNome;
+                for (int i = 0; i < jComboBoxCategoria.getItemCount(); i++) {
+                    var item = (String) jComboBoxCategoria.getItemAt(i);
+                    if (mensagem.equals(item)) {
+                        jComboBoxCategoria.setSelectedItem(item);
+                    }
+                }
+            }
+            
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
+    }//GEN-LAST:event_jButtonEditarActionPerformed
+    
     private void listarFilmes() {
         try {
-            var jdbcUrl = "jdbc:mysql://localhost:3306/locadora";
-            var jdbcUsuario = "root";
-            var jdbcSenha = "admin";
-
-            var conexao = DriverManager.getConnection(jdbcUrl, jdbcUsuario, jdbcSenha);
-            var query = "SELECT id, nome FROM filmes";
+            var conexao = Banco.conectar();
+            var query = """
+                        SELECT
+                        filmes.id,
+                        categoria.nome AS 'categorias',
+                        filmes.nome
+                        FROM filmes
+                        INNER JOIN categoria ON (filmes.id_categoria = categoria.id);
+                        """;
             var statement = conexao.createStatement();
             var dados = statement.executeQuery(query);
             var modeloTabela = (DefaultTableModel) jTableFilmes.getModel();
@@ -221,10 +293,28 @@ public class FilmeJFrame extends javax.swing.JFrame {
             while (dados.next()) {
                 var id = Integer.parseInt(dados.getString("id"));
                 var nome = dados.getString("nome");
+                var categoriaNome = dados.getString("categorias");
                 modeloTabela.addRow(new Object[]{
-                    id, nome
+                    id, categoriaNome, nome
                 });
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    private void popularComboBoxCategoria() {
+        try {
+            var conexao = Banco.conectar();
+            var query = "SELECT id, nome FROM categoria";
+            var statement = conexao.createStatement();
+            var dados = statement.executeQuery(query);
+            while (dados.next()) {
+                var categoriaNome = dados.getString("nome");
+                var categotiaId = dados.getInt("id");
+                jComboBoxCategoria.addItem(categotiaId + " - " + categoriaNome);
+            }
+            
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -269,6 +359,8 @@ public class FilmeJFrame extends javax.swing.JFrame {
     private javax.swing.JButton jButtonApagar;
     private javax.swing.JButton jButtonCadastrar;
     private javax.swing.JButton jButtonEditar;
+    private javax.swing.JComboBox<String> jComboBoxCategoria;
+    private javax.swing.JLabel jLabel1Categoria;
     private javax.swing.JLabel jLabelListaFilmes;
     private javax.swing.JLabel jLabelNome;
     private javax.swing.JScrollPane jScrollPane1;
